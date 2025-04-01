@@ -51,7 +51,7 @@
     }
     
     input {
-        text-align: center;
+        text-align: left;
         font-size: 20px;
         width: 100%;
         padding: 5px;
@@ -79,6 +79,9 @@
         font-size: 25px;
         color: green;
     }
+    #a1{
+        text-align: center;
+    }
 </style>
 </head>
 <body>
@@ -102,7 +105,8 @@
             </tr>
             <tr>
                 <th>Mobile No.:</th>
-                <td><input type="number" id="mobile"></td>
+                <td><input type="text" id="mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
+                </td>
             </tr>
         </table>
 
@@ -119,8 +123,8 @@
             <tr>
                 <td>1</td>
                 <td><input type="text" class="item-name"></td>
-                <td><input type="number" class="item-qty" oninput="updateTotal()"></td>
-                <td><input type="number" class="item-amount" oninput="updateTotal()"></td>
+                <td><input id="a1" type="number" class="item-qty" oninput="updateTotal()"></td>
+                <td><input id="a1" type="number" class="item-amount" oninput="updateTotal()"></td>
             </tr>
         </tbody>
     </table>
