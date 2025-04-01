@@ -51,7 +51,7 @@ th:nth-child(5), td:nth-child(5) {
 }
 
 input {
-    text-align: center;
+    text-align: left;
     font-size: 20px;
     width: 100%;
     padding: 5px;
@@ -78,6 +78,9 @@ input {
     text-align: center;
     font-size: 25px;
     color: green;
+}
+#a1{
+    text-align: center;
 }
     </style>
 </head>
@@ -120,9 +123,9 @@ input {
             <tr>
                 <td>1</td>
                 <td><input type="text" class="item-name"></td>
-                <td><input type="number" class="item-qty" oninput="updateTotal()"></td>
-                <td><input type="number" class="item-amount" oninput="updateTotal()"></td>
-                <td><input type="number" class="item-discount" oninput="updateTotal()"></td>
+                <td><input id="a1" type="number" class="item-qty" oninput="updateTotal()"></td>
+                <td><input id="a1" type="number" class="item-amount" oninput="updateTotal()"></td>
+                <td><input id="a1" type="number" class="item-discount" oninput="updateTotal()"></td>
             </tr>
         </tbody>
     </table>
