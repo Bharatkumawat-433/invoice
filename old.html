@@ -147,9 +147,9 @@ input {
             newRow.innerHTML = `
                 <td>${itemCount}</td>
                 <td><input type="text" class="item-name"></td>
-                <td><input type="number" class="item-qty" oninput="updateTotal()"></td>
-                <td><input type="number" class="item-amount" oninput="updateTotal()"></td>
-                 <td><input type="number" class="item-discount" oninput="updateTotal()"></td>
+                <td><input id="a1" type="number" class="item-qty" oninput="updateTotal()"></td>
+                <td><input id="a1" type="number" class="item-amount" oninput="updateTotal()"></td>
+                 <td><input id="a1" type="number" class="item-discount" oninput="updateTotal()"></td>
                 `;
             document.querySelector('#items-table tbody').appendChild(newRow);
         }
