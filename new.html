@@ -5,90 +5,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- <link rel="stylesheet" href="style.css"> -->
-     <style>
-    body {
-        font-family: Arial, sans-serif;
-        width: 95%;
-        margin: auto;
-        margin-top: 40px;
-        margin-bottom: 20px;
-        border: 1.5px solid #000;
-    }
-    
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    
-    table, th, td {
-        border: 2px solid black;
-    }
-    
-    th, td {
-        padding: 10px;
+    <style>
+     body {
+         font-family: Arial, sans-serif;
+         width: 95%;
+         margin: auto;
+         margin-top: 40px;
+         margin-bottom: 20px;
+         border: 1.5px solid #000;
+     }
+
+     table {
+         width: 100%;
+         border-collapse: collapse;
+     }
+
+     table, th, td {
+         border: 2px solid black;
+     }
+
+     th, td {
+         padding: 10px;
+         text-align: center;
+         font-size: 20px;
+         word-wrap: break-word;
+         box-sizing: border-box;
+     }
+     /* Define column widths */
+     th:nth-child(1), td:nth-child(1) {
+         width: 5%;
+     }
+     th:nth-child(2), td:nth-child(2) {
+         width: 40%;
+     }
+     th:nth-child(3), td:nth-child(3) {
+         width: 15%; /* Qty */
+     }
+     th:nth-child(4), td:nth-child(4) {
+         width: 20%; /* Rate */
+     }
+     /* Ensure last cell in tfoot aligns with Rate column width */
+     #items-table tfoot td:last-child {
+        width: 20%;
+     }
+
+
+     input {
+         text-align: left;
+         font-size: 20px;
+         width: 100%;
+         padding: 5px;
+         border: none;
+         outline: none;
+         box-sizing: border-box; /* Include padding in width */
+     }
+     /* Center align number inputs */
+     input[type="number"] {
         text-align: center;
-        font-size: 20px;
-        word-wrap: break-word;
-        box-sizing: border-box;
-    }
-    th:nth-child(1), td:nth-child(1) {
-        width: 5%;
-    }
-    th:nth-child(2), td:nth-child(2) {
-        width: 40%;
-    }
-    th:nth-child(3), td:nth-child(3) {
-        width: 15%;
-    }
-    th:nth-child(4), td:nth-child(4) {
-        width: 20%;
-    }
-    th:nth-child(5), td:nth-child(5) {
-        width: 20%;
-    }
-    
-    input {
-        text-align: left;
-        font-size: 20px;
-        width: 100%;
-        padding: 5px;
-        border: none;
-        outline: none;
-    }
-    
-    #add-item-btn, #save-invoice-btn, #generate-pdf-btn {
-        margin-top: 20px;
+     }
+
+
+     #add-item-btn, #save-invoice-btn, #generate-pdf-btn {
+         margin: 20px 10px; /* Add some horizontal margin too */
+         font-size: 17px;
+         padding: 8px 15px; /* Add padding to buttons */
+         display: inline-block; /* Display buttons inline */
+     }
+
+     #alankar {
+         font-size: 45px;
+     }
+
+     #gst {
+         font-size: 22px;
+     }
+
+     /* Style for the table footer row */
+     #items-table tfoot td {
+         font-weight: bold;
+         font-size: 22px; /* Make total font slightly larger */
+     }
+
+     #items-table tfoot td[colspan="3"] {
+         text-align: right;
+         padding-right: 10px; /* Add padding */
+     }
+
+     #grand-total-cell {
+         text-align: center; /* Center the amount in its cell */
+         color: green;      /* Keep the green color */
+     }
+     #date{
+        text-align: center;
+     }
+  
+
+     #number{
         font-size: 17px;
-        display: block;
-    }
-    
-    #alankar {
-        font-size: 45px;
-    }
-    
-    #gst {
-        font-size: 22px;
-    }
-    
-   #total {
-    padding-right:  10px;
-    text-align: right;
-    font-size: 25px;
-    color: green;
-    }
-    #a1{
-        text-align: center;
-    }
-</style>
+
+     }
+    </style>
 </head>
 <body>
     <div id="invoice-content">
         <table>
             <tr><th colspan="3" id="alankar">Alankar Car Décor</th></tr>
-            <tr><td colspan="3">Shop No.4, Dhruvi Mall, College Road, Gohar Baug, Near Honest, Bilimora-396321</td></tr>
+            <tr>
+                <td colspan="3"> Shop No.4, Dhruvi Mall, College Road, Gohar Baug, Near Honest, Bilimora-396321
+                    <br>
+                    <span id="number"> ( RAVI JURANI Mo. 7874879799 )</span>
+                </td>
+            </tr>
             <tr><th colspan="3">INVOICE</th></tr>
         </table>
 
@@ -107,162 +135,173 @@
                 <th>Mobile No.:</th>
                 <td><input type="text" id="mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
                 </td>
+                <td></td>
             </tr>
         </table>
 
-    <table id="items-table">
-        <thead>
-            <tr>
-                <th>No.</th>
-                <th>Particulars</th>
-                <th>Qty</th>
-                <th>Rate (₹)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>1</td>
-                <td><input type="text" class="item-name"></td>
-                <td><input id="a1" type="number" class="item-qty" oninput="updateTotal()"></td>
-                <td><input id="a1" type="number" class="item-amount" oninput="updateTotal()"></td>
-            </tr>
-        </tbody>
-    </table>
+        <table id="items-table">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Particulars</th>
+                    <th>Qty</th>
+                    <th>Rate (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td><input type="text" class="item-name"></td>
+                    <td><input type="number" class="item-qty" oninput="updateTotal()"></td>
+                    <td><input type="number" class="item-amount" oninput="updateTotal()"></td>
+                </tr>
+            </tbody>
+             <tfoot>  <tr>
+                    <td colspan="3">TOTAL:</td>
+                    <td id="grand-total-cell">₹0.00</td>
+                </tr>
+            </tfoot>
+        </table>
 
-    <p id="total">TOTAL: ₹<span id="grand-total">0</span></p>
+        <div style="padding: 0 10px 10px 10px;"> <button onclick="addItem()" id="add-item-btn">Add Item</button>
+            <button id="save-invoice-btn" onclick="saveInvoice()">Save Invoice</button>
+            <button onclick="generatePDF()" id="generate-pdf-btn">Generate PDF</button>
+        </div>
 
-    <button onclick="addItem()">Add Item</button>
-    <button id="save-invoice-btn " onclick="saveInvoice()">Save Invoice</button>
-  
-    <button onclick="generatePDF()">Generate PDF</button>
-
-    <script>
+    </div> <script>
         let itemCount = 1;
-        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwIwzk3RN4Nq74D9lRXVh3opomTSEl8yXVqJF5ENnk5ePH3t7H-zod6nsJsybGDP7P61Q/exec"; // Replace with your Web App URL
+        // Ensure this is the correct URL for the saveInvoice function
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwIwzk3RN4Nq74D9lRXVh3opomTSEl8yXVqJF5ENnk5ePH3t7H-zod6nsJsybGDP7P61Q/exec";
 
         function addItem() {
             itemCount++;
             const newRow = document.createElement('tr');
+            // Removed duplicate id="a1" from inputs
             newRow.innerHTML = `
                 <td>${itemCount}</td>
                 <td><input type="text" class="item-name"></td>
-                <td><input id="a1" type="number" class="item-qty" oninput="updateTotal()"></td>
-                <td><input id="a1" type="number" class="item-amount" oninput="updateTotal()"></td>
+                <td><input type="number" class="item-qty" oninput="updateTotal()"></td>
+                <td><input type="number" class="item-amount" oninput="updateTotal()"></td>
             `;
             document.querySelector('#items-table tbody').appendChild(newRow);
+             // Optionally update total immediately when row is added
+             // updateTotal();
         }
 
         function updateTotal() {
             let grandTotal = 0;
             document.querySelectorAll('#items-table tbody tr').forEach(row => {
-                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-                const amount = parseFloat(row.querySelector('.item-amount').value) || 0;
+                const qtyInput = row.querySelector('.item-qty');
+                const amountInput = row.querySelector('.item-amount');
+                // Check if inputs exist before accessing value
+                const qty = qtyInput ? (parseFloat(qtyInput.value) || 0) : 0;
+                const amount = amountInput ? (parseFloat(amountInput.value) || 0) : 0;
                 grandTotal += qty * amount;
             });
-            document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
+            // Update the content of the specific cell in the tfoot
+            // Prepend '₹' to show the currency symbol
+            document.getElementById('grand-total-cell').textContent = '₹' + grandTotal.toFixed(2);
         }
 
         function saveInvoice() {
             const name = document.getElementById('name').value;
             const address = document.getElementById('address').value;
             const mobile = document.getElementById('mobile').value;
-            const total = document.getElementById('grand-total').textContent;
+            // Get total from the new cell, removing the currency symbol
+            const totalText = document.getElementById('grand-total-cell').textContent;
+            const total = totalText.replace('₹', ''); // Remove '₹' before sending
             let items = [];
 
             document.querySelectorAll('#items-table tbody tr').forEach(row => {
-                const itemName = row.querySelector('.item-name').value;
-                const qty = row.querySelector('.item-qty').value;
-                const amount = row.querySelector('.item-amount').value;
-                if (itemName && qty && amount) {
+                const itemNameInput = row.querySelector('.item-name');
+                const qtyInput = row.querySelector('.item-qty');
+                const amountInput = row.querySelector('.item-amount');
+
+                // Check if inputs exist and have values
+                 const itemName = itemNameInput ? itemNameInput.value : "";
+                 const qty = qtyInput ? qtyInput.value : "";
+                 const amount = amountInput ? amountInput.value : "";
+
+                if (itemName && qty && amount) { // Only add if all fields have values
                     items.push({ itemName, qty, amount });
                 }
             });
 
             if (!name || !mobile || items.length === 0) {
-                alert("Please fill all details.");
+                alert("Please fill Customer Name, Mobile No., and at least one complete item line.");
                 return;
             }
 
+            // Use the correct GOOGLE_SHEET_URL constant
             fetch(GOOGLE_SHEET_URL, {
                 method: "POST",
-                mode: "no-cors",
+                mode: "no-cors", // Note: "no-cors" prevents reading the response from Google Sheets
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, address, mobile, total, items })
+                body: JSON.stringify({ name, address, mobile, total, items }) // Sending total without '₹'
             }).then(() => {
-                alert("Invoice Saved!");
-            }).catch(err => console.error("Error:", err));
+                // Since mode is "no-cors", this .then() might execute even if the sheet save failed.
+                alert("Invoice Saved! (Please verify in Google Sheet)");
+            }).catch(err => {
+                 // Errors here are likely network issues or CORS problems prevented by "no-cors".
+                 // Errors *within* the Google Apps Script won't be caught here.
+                console.error("Fetch Error:", err);
+                alert("Error saving invoice. Check console for details.");
+            });
         }
-        // 13.38 pdf generate
-          
 
-            function generatePDF() {
-    const { jsPDF } = window.jspdf;
-    const invoiceContent = document.getElementById('invoice-content');
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const invoiceContent = document.getElementById('invoice-content');
 
-    // Hide buttons before generating PDF
-    const buttons = invoiceContent.querySelectorAll("button");
-    buttons.forEach(btn => btn.style.display = "none");
+            // Temporarily hide buttons for PDF generation
+            const buttons = document.querySelectorAll("button"); // Select all buttons
+            buttons.forEach(btn => btn.style.visibility = "hidden"); // Use visibility to maintain layout
 
-    html2canvas(invoiceContent, { scale: 2 }).then(canvas => {
-        const imgData = canvas.toDataURL('image/jpeg', 1.0);
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgWidth = 210 - 20;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            html2canvas(invoiceContent, {
+                 scale: 2, // Increase scale for better resolution
+                 useCORS: true // May help if images are involved
+                 }).then(canvas => {
+                const imgData = canvas.toDataURL('image/jpeg', 1.0); // Use JPEG for smaller size
+                const pdf = new jsPDF('p', 'mm', 'a4'); // Portrait, mm, A4 size
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
 
-        pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
-        const customerName = document.getElementById('name').value.trim() || 'Invoice';
-        pdf.save(`${customerName}.pdf`);
+                const imgProps= pdf.getImageProperties(imgData);
+                const imgWidth = pdfWidth - 20; // pdfWidth minus margins (10mm each side)
+                const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-        // Restore button visibility after PDF generation
-        buttons.forEach(btn => btn.style.display = "block");
-    });
-} 
-      
+                let heightLeft = imgHeight;
+                let position = 10; // Initial top margin
 
-        // new line for google sheet code 
+                // Add image, handling pagination if necessary
+                pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pdfHeight - 20); // Subtract first page height (minus margins)
 
-        function sendDataToGoogleSheet() {
-    const name = document.getElementById("name").value;
-    const address = document.getElementById("address").value;
-    const mobile = document.getElementById("mobile").value;
-    const total = document.getElementById("grand-total").textContent;
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight + 10; // Adjust position for next page
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= (pdfHeight - 20);
+                }
 
-    let items = [];
-    document.querySelectorAll("#items-table tbody tr").forEach(row => {
-        const itemName = row.querySelector(".item-name").value || "";
-        const itemQty = row.querySelector(".item-qty").value || "";
-        const itemAmount = row.querySelector(".item-amount").value || "";
-        if (itemName) {
-            items.push(`${itemName} (Qty: ${itemQty}, ₹${itemAmount})`);
+                const customerName = document.getElementById('name').value.trim() || 'Invoice';
+                pdf.save(`${customerName}.pdf`);
+
+                // Restore button visibility after PDF generation
+                buttons.forEach(btn => btn.style.visibility = "visible");
+            }).catch(err => {
+                console.error("Error generating PDF:", err);
+                alert("Failed to generate PDF. Check console for details.");
+                // Ensure buttons are visible even if PDF generation fails
+                buttons.forEach(btn => btn.style.visibility = "visible");
+            });
         }
-    });
 
-    const data = {
-        name: name,
-        address: address,
-        mobile: mobile,
-        total: total,
-        items: items.join("; ")
-    };
+        // Removed the sendDataToGoogleSheet function and the event listener below
+        // document.getElementById("save-invoice-btn").addEventListener("click", sendDataToGoogleSheet);
 
-    fetch("https://script.google.com/macros/s/AKfycbwyN1_IWcKX6Z0J-FhN_nMcTXJrK7b0IsJyyAxROmx1mfS65L6fCXyYg4Ckd8OC7NWUUA/exec", {  // Replace with your URL
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert("Invoice data saved successfully!");
-    })
-    .catch(error => {
-        console.error("Error:", error);
-    });
-}
-
-// Call this function when clicking the "Save Invoice" button
-document.getElementById("save-invoice-btn").addEventListener("click", sendDataToGoogleSheet);
+         // Call updateTotal on initial load in case there are default values (optional)
+         // window.onload = updateTotal;
 
     </script>
 
