@@ -1,4 +1,357 @@
+<!-- new 20/07/2025 -->
+
 <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        width: 95%;
+        margin: auto;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        border: 1.5px solid #000;
+    }
+    #date{
+        text-align: center;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    table, th, td {
+        border: 2px solid black;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: center;
+        font-size: 20px;
+        word-wrap: break-word;
+        box-sizing: border-box;
+    }
+    /* Define column widths */
+    th:nth-child(1), td:nth-child(1) {
+        width: 5%;
+    }
+    th:nth-child(2), td:nth-child(2) {
+        width: 40%;
+    }
+    th:nth-child(3), td:nth-child(3) {
+        width: 15%; /* Qty */
+    }
+    th:nth-child(4), td:nth-child(4) {
+        width: 20%; /* Rate */
+    }
+    /* Ensure last cell in tfoot aligns with Rate column width */
+    #items-table tfoot td:last-child {
+        width: 20%;
+    }
+
+
+    input {
+        text-align: left;
+        font-size: 20px;
+        width: 100%;
+        padding: 5px;
+        border: none;
+        outline: none;
+        box-sizing: border-box; /* Include padding in width */
+    }
+    /* Center align number inputs */
+    input[type="number"] {
+        text-align: center;
+    }
+
+
+    #add-item-btn, #save-invoice-btn, #generate-pdf-btn, #send-whatsapp-btn { /* Added #send-whatsapp-btn */
+        margin: 20px 10px; /* Add some horizontal margin too */
+        font-size: 17px;
+        padding: 8px 15px; /* Add padding to buttons */
+        display: inline-block; /* Display buttons inline */
+    }
+
+    #alankar {
+        font-size: 45px;
+    }
+
+    #gst {
+        font-size: 22px;
+    }
+
+    /* Style for the table footer row */
+    #items-table tfoot td {
+        font-weight: bold;
+        font-size: 22px; /* Make total font slightly larger */
+    }
+
+    #items-table tfoot td[colspan="3"] {
+        text-align: right;
+        padding-right: 10px; /* Add padding */
+    }
+
+    #grand-total-cell {
+        text-align: center; /* Center the amount in its cell */
+        color: green;        /* Keep the green color */
+    }
+
+    #number{
+        font-size: 17px;
+
+    }
+    #t1{
+        text-align: right;
+    }
+    </style>
+</head>
+<body>
+    <div id="invoice-content">
+        <table>
+            <tr><th colspan="3" id="alankar">Alankar Car Décor</th></tr>
+            <tr>
+                <td colspan="3"> Shop No.4, Dhruvi Mall, College Road, Gohar Baug, Near Honest, Bilimora-396321
+                    <br>
+                    <span id="number">( RAVI JURANI Mo. 7874879799 )</span>
+                </td>
+            </tr>
+            <tr><th colspan="3">INVOICE</th></tr>
+        </table>
+
+        <table>
+            <tr>
+                <th>Customer Name:</th>
+                <td><input type="text" id="name"></td>
+                <th>Date: <input type="datetime-local" id="date"></th>
+            </tr>
+            <tr>
+                <th>Address:</th>
+                <td><input type="text" id="address"></td>
+                <td id="gst"> GSTIN :  24AOHPJ2421H1ZD </td>
+            </tr>
+            <tr>
+                <th>Mobile No.:</th>
+                <td><input type="text" id="mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);"></td>
+                <td></td> 
+            </tr>
+        </table>
+
+        <table id="items-table">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Particulars</th>
+                    <th>Qty</th>
+                    <th>Actual Rate (₹)</th>
+                    <th>Discounted Rate(₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td><input type="text" class="item-name"></td>
+                    <td><input type="number" class="item-qty" oninput="updateTotal()"></td>
+                    <td><input type="number" class="item-actual-rate"></td> <td><input type="number" class="item-discounted-rate" oninput="updateTotal()"></td>
+                </tr>
+            </tbody>
+              <tfoot>
+                  <tr>
+                      <td id="t1" colspan="4">TOTAL:</td>
+                      <td id="grand-total-cell">₹0.00</td>
+                  </tr>
+            </tfoot>
+        </table>
+
+        <div style="padding: 0 10px 10px 10px;">
+              <button onclick="addItem()" id="add-item-btn">Add Item</button>
+              <button id="save-invoice-btn" onclick="saveInvoice()">Save Invoice</button>
+              <button onclick="generatePDF()" id="generate-pdf-btn">Generate PDF</button>
+              <button onclick="openWhatsAppChat()" id="send-whatsapp-btn">Send via WhatsApp</button> </div>
+
+    </div>
+
+    <script>
+        let itemCount = 1;
+        // Ensure this is the correct URL for your Google Apps Script
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwIwzk3RN4Nq74D9lRXVh3opomTSEl8yXVqJF5ENnk5ePH3t7H-zod6nsJsybGDP7P61Q/exec"; // Replace if yours is different
+
+        function addItem() {
+            itemCount++;
+            const newRow = document.createElement('tr');
+            // Added inputs for actual and discounted rates
+            newRow.innerHTML = `
+                <td>${itemCount}</td>
+                <td><input type="text" class="item-name"></td>
+                <td><input type="number" class="item-qty" oninput="updateTotal()"></td>
+                <td><input type="number" class="item-actual-rate"></td>
+                <td><input type="number" class="item-discounted-rate" oninput="updateTotal()"></td>
+            `;
+            document.querySelector('#items-table tbody').appendChild(newRow);
+        }
+
+        function updateTotal() {
+            let grandTotal = 0;
+            document.querySelectorAll('#items-table tbody tr').forEach(row => {
+                const qtyInput = row.querySelector('.item-qty');
+                // Using discounted rate for total calculation
+                const discountedRateInput = row.querySelector('.item-discounted-rate');
+
+                const qty = qtyInput ? (parseFloat(qtyInput.value) || 0) : 0;
+                const discountedRate = discountedRateInput ? (parseFloat(discountedRateInput.value) || 0) : 0;
+
+                grandTotal += qty * discountedRate; // Total based on discounted rate
+            });
+            // Update the cell in the table footer
+            document.getElementById('grand-total-cell').textContent = '₹' + grandTotal.toFixed(2);
+        }
+
+        function saveInvoice() {
+            const name = document.getElementById('name').value;
+            const address = document.getElementById('address').value;
+            const mobile = document.getElementById('mobile').value;
+            const totalText = document.getElementById('grand-total-cell').textContent;
+            const total = totalText.replace('₹', ''); // Remove currency symbol
+            let items = [];
+
+            document.querySelectorAll('#items-table tbody tr').forEach(row => {
+                const itemNameInput = row.querySelector('.item-name');
+                const qtyInput = row.querySelector('.item-qty');
+                const actualRateInput = row.querySelector('.item-actual-rate');
+                const discountedRateInput = row.querySelector('.item-discounted-rate');
+
+                const itemName = itemNameInput ? itemNameInput.value : "";
+                const qty = qtyInput ? qtyInput.value : "";
+                const actualRate = actualRateInput ? actualRateInput.value : "";
+                const discountedRate = discountedRateInput ? discountedRateInput.value : "";
+
+                // Add item only if essential fields are filled (Name, Qty, Discounted Rate)
+                if (itemName && qty && discountedRate) {
+                    items.push({ itemName, qty, actualRate, discountedRate }); // Saving both rates
+                }
+            });
+
+            if (!name || !mobile || items.length === 0) {
+                alert("Please fill Customer Name, Mobile No., and at least one complete item line (Name, Qty, Discounted Rate).");
+                return;
+            }
+
+            fetch(GOOGLE_SHEET_URL, {
+                method: "POST",
+                mode: "no-cors", // Important for Google Apps Script web apps called from client-side JS
+                headers: { "Content-Type": "application/json" },
+                // Sending customer details, total (without ₹), and the items array (including both rates)
+                body: JSON.stringify({ name, address, mobile, total, items })
+            }).then(() => {
+                // Since mode is "no-cors", success/failure feedback from the script isn't directly available here.
+                alert("Invoice Saved! (Please verify in Google Sheet)");
+            }).catch(err => {
+                console.error("Fetch Error:", err);
+                alert("Error saving invoice. Check console for details.");
+            });
+        }
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const invoiceContent = document.getElementById('invoice-content');
+
+            // Temporarily hide buttons for PDF generation
+            const buttons = document.querySelectorAll("button"); // Select all buttons
+            buttons.forEach(btn => btn.style.visibility = "hidden"); // Use visibility to maintain layout
+
+            html2canvas(invoiceContent, {
+                    scale: 2, // Increase scale for better resolution
+                    useCORS: true // May help if images are involved
+                    }).then(canvas => {
+                const imgData = canvas.toDataURL('image/jpeg', 1.0); // Use JPEG for potentially smaller size
+                const pdf = new jsPDF('p', 'mm', 'a4'); // Portrait, mm, A4 size
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+
+                const imgProps= pdf.getImageProperties(imgData);
+                const margin = 10; // Define margin in mm
+                const imgWidth = pdfWidth - 2 * margin; // pdfWidth minus margins
+                const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+                const pageHeightWithMargin = pdfHeight - 2 * margin; // Usable height per page
+
+                let heightLeft = imgHeight;
+                let position = margin; // Initial top margin
+
+                // Add first page image
+                pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+                heightLeft -= pageHeightWithMargin; // Subtract used height on the first page
+
+                // Add subsequent pages if needed
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight + margin; // Negative offset for the next part of the image
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeightWithMargin; // Subtract used height on the new page
+                }
+
+                const customerName = document.getElementById('name').value.trim() || 'Invoice';
+                pdf.save(`${customerName}.pdf`);
+
+                // Restore button visibility after PDF generation
+                buttons.forEach(btn => btn.style.visibility = "visible");
+            }).catch(err => {
+                console.error("Error generating PDF:", err);
+                alert("Failed to generate PDF. Check console for details.");
+                // Ensure buttons are visible even if PDF generation fails
+                buttons.forEach(btn => btn.style.visibility = "visible");
+            });
+        }
+
+        // --- NEW FUNCTION FOR WHATSAPP ---
+        function openWhatsAppChat() {
+            const mobileInput = document.getElementById('mobile');
+            let clientNumber = mobileInput.value.trim();
+
+            if (clientNumber === "") {
+                alert("Please enter the client's mobile number in the 'Mobile No.:' field first.");
+                return;
+            }
+
+            // Ensure the number is formatted correctly for WhatsApp (e.g., +91 for India)
+            // Assuming 10-digit numbers are Indian numbers, you might prepend '91'
+            // If it's already an international format (e.g., starts with '+'), leave it.
+            // Otherwise, prepend '91' for India.
+            if (clientNumber.length === 10 && !clientNumber.startsWith('+')) {
+                clientNumber = '91' + clientNumber; // For Indian numbers
+            } else if (!clientNumber.startsWith('+')) {
+                // If it's not 10 digits and doesn't start with +, add +
+                clientNumber = '+' + clientNumber;
+            }
+
+            // Construct the WhatsApp URL to open the chat
+            const whatsappUrl = `https://wa.me/${clientNumber}`;
+
+            // Open WhatsApp in a new tab/window
+            window.open(whatsappUrl, '_blank');
+
+            // Provide a reminder to the user
+            alert("WhatsApp chat opened! Please manually attach the invoice PDF (which should be in your downloads folder) and send it.");
+        }
+
+        // Optional: Call updateTotal on initial load if needed
+        // window.onload = updateTotal;
+
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -313,3 +666,4 @@
 
 </body>
 </html>
+ -->
